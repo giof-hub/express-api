@@ -16,9 +16,7 @@ pool.on('error', (err, client) => {
 pool.on('connect', () => {
     var result = pool.query("SELECT NOW()");
     
-    result.then(() => {
-        console.log('Conectado com sucesso');
-    }).catch((error) => {
+    result.catch((error) => {
         console.log("Erro de conexão " + error)
     });
 });
