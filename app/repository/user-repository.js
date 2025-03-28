@@ -1,13 +1,32 @@
 const db = require('../db/database');
 
 exports.listAll = async () => {
-    const { rows } = await db.query('SELECT * FROM USUARIO');
+    const { rows } = await db.query(`SELECT P.ID,
+                P.NOME, 
+                P.DOCUMENTO, 
+                P.PROFISSAO, 
+                P.DATANASCIMENTO,
+                U.EMAIL, 
+                U.LOGIN
+            FROM USUARIO U
+            INNER JOIN PESSOA P ON P.ID = U.IDPESSOA`);
     
     return rows;
 }
 
 exports.getById = async (id) => {
-    const { rows } = await db.query('SELECT * FROM USUARIO WHERE ID = $1', [id]);
+    const { rows } = await db.query(
+        `SELECT P.ID,
+                P.NOME, 
+                P.DOCUMENTO, 
+                P.PROFISSAO, 
+                P.DATANASCIMENTO,
+                U.EMAIL, 
+                U.LOGIN
+            FROM USUARIO U
+            INNER JOIN PESSOA P ON P.ID = U.IDPESSOA
+            WHERE ID = $1`
+        , [id]);
     
     return rows;
 }
