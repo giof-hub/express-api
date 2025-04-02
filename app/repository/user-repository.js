@@ -25,10 +25,10 @@ exports.getById = async (id) => {
                 U.LOGIN
             FROM USUARIO U
             INNER JOIN PESSOA P ON P.ID = U.IDPESSOA
-            WHERE ID = $1`
+            WHERE P.ID = $1`
         , [id]);
     
-    return rows;
+    return rows[0] ?? {};
 }
 
 exports.save = async (usuario) => {
@@ -39,14 +39,15 @@ exports.save = async (usuario) => {
 }
 
 exports.update = async (usuario, id) => {
-    const { rows } = await db.query('UPDATE USUARIO SET EMAIL = $1 WHERE ID = $2', 
-                                        [usuario.email, id]);
+    const { rows } = await db.query('UPDATE PESSOA SET NOME = $1, DOCUMENTO = $2, PROFISSAO = $3, DATANASCIMENTO = $4 WHERE ID = $5', 
+        [usuario.nome, usuario.documento, usuario.profissao, usuario.dataNascimento, id]);
     
     return rows;
 }
 
 exports.delete = async (id) => {
-    const { rows } = await db.query('DELETE FROM USUARIO WHERE ID = $1', [id]);
-    
-    return rows;
+    await db.query('DELETE FROM USUARIO WHERE IDPESSOA = $1', [id]);
+    await db.query('DELETE FROM PESSOA WHERE ID = $1', [id]);
+
+    return;
 }

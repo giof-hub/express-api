@@ -10,9 +10,10 @@ exports.listAll = async (req, res) => {
 }
 
 exports.getById = async (req, res) => {
+
     const usuario = await repository.getById(req.params.id);
 
-    console.log(usuario)
+    res.status(200).json(usuario);
 }
 
 exports.save = async (req, res) => {
@@ -53,8 +54,12 @@ exports.save = async (req, res) => {
 
 exports.updateById = async (req, res) => {
     await repository.update(req.body, req.params.id);
+
+    res.status(200).json({message: "Usuário atualizado com sucesso!"});
 }
 
 exports.deleteById = async (req, res) => {
     await repository.delete(req.params.id);
+
+    res.status(200).json({message: "Usuário deletado com sucesso"});
 }

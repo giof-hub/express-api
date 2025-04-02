@@ -6,6 +6,7 @@
     <title>Tecnologias</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
 </head>
 <body style="height: 100vh;">
     <div class="container">
@@ -64,6 +65,50 @@
                 </tbody>
             </table>
         </div>
+
+        <div class="modal fade" id="atualizar-pessoa-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">Atualizar Cadastro</h5>
+
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input id="identificador-update" type="text" value="" hidden/>
+                    </div>
+                    <div class="form-group">
+                        <label for="nome-update">Nome</label>
+                        <input type="text" class="form-control" id="nome-update" placeholder="Digite seu nome">
+                    </div>
+                    <div class="form-group">
+                        <label for="email-update">E-mail</label>
+                        <input type="email" class="form-control" id="email-update" disabled placeholder="Digite seu e-mail">
+                    </div>
+                    <div class="form-group">
+                        <label for="login-update">Login</label>
+                        <input type="text" class="form-control" id="login-update" disabled placeholder="Escolha um Login">
+                    </div>
+                    <div class="form-group">
+                        <label for="documento-update">Documento</label>
+                        <input type="text" class="form-control" id="documento-update" placeholder="Digite seu documento">
+                    </div>
+                    <div class="form-group">
+                        <label for="profissao-update">Profissão</label>
+                        <input type="text" class="form-control" id="profissao-update" placeholder="Qual sua profissão ?">
+                    </div>
+                    <div class="form-group">
+                        <label for="data-nascimento-update">Data Nascimento</label>
+                        <input type="date" class="form-control" id="data-nascimento-update" placeholder="Sua data de nascimento">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" onclick="$('#atualizar-pessoa-modal').modal('hide')">Close</button>
+                  <button type="button" class="btn btn-primary" id="atualizar">Atualizar</button>
+                </div>
+              </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -75,31 +120,69 @@
                 }
             });
 
-            $(document).on('click', '.remover', () => {
-                console.log($(this)[0].attr('data-id'))
+            listar();
+
+            $(document).on('click', '.remover', (event) => {
+                var id = $(event.target).attr('data-id');
+
+                if (id != null && id != "") {
+                    $.ajax({
+                        url: `http://localhost:3000/usuario/${id}`,
+                        type: 'DELETE',
+                        success: function(result) {
+                            alert("Deletado com sucesso!")
+                            window.location.reload();
+                        }
+                    });
+                }
             });
 
-            $.get("http://localhost:3000/usuario", (e) => {
+            $(document).on('click', '.abrir-atualizar', (event) => {
 
-                var usuarioTable = $('#usuario-table > tbody');
+                var id = $(event.target).attr('data-id');
 
-                for (var i = 0; i < e.length; i++) {
-                    var content = usuarioTable.html();
+                if (id == null || id == undefined) {
+                    alert("Id inválido");
+                    return;
+                }
 
-                    var row = `
-                        <tr>
-                            <th scope="row">${e[i].id}</th>
-                            <td>${e[i].nome}</td>
-                            <td>${e[i].email}</td>
-                            <td>${e[i].login}</td>
-                            <td>${e[i].documento}</td>
-                            <td>${e[i].profissao}</td>
-                            <td>${e[i].datanascimento}</td>
-                            <td><button class="btn btn-danger remover" data-id="${e[i].id}">X</button></td>
-                        </tr>
-                    `;
+                $.get(`http://localhost:3000/usuario/${id}`, (e) => {
 
-                    usuarioTable.html(content + row);
+                    var dataNascimento = e.datanascimento.split('T')[0];
+
+                    $('#nome-update').val(e.nome)
+                    $('#email-update').val(e.email)
+                    $('#login-update').val(e.login)
+                    $('#documento-update').val(e.documento)
+                    $('#profissao-update').val(e.profissao)
+                    $('#data-nascimento-update').val(dataNascimento)
+                    $('#identificador-update').val(id)
+                });
+
+                $('#atualizar-pessoa-modal').modal('show');
+            });
+
+            $(document).on('click', '#atualizar', (event) => {
+                var id = $('#identificador-update').val();
+
+                const formData = {
+                    nome: $('#nome-update').val(),
+                    documento: $('#documento-update').val(),
+                    profissao: $('#profissao-update').val(),
+                    dataNascimento: $('#data-nascimento-update').val()
+                }
+
+                if (id != null && id != "") {
+                    $.ajax({
+                        url: `http://localhost:3000/usuario/${id}`,
+                        type: 'PUT',
+                        contentType: "application/json; charset=UTF-8",
+                        data: JSON.stringify(formData),
+                        success: function(result) {
+                            alert("Atualizado com sucesso!")
+                            window.location.reload();
+                        }
+                    });
                 }
             });
 
@@ -117,10 +200,44 @@
 
                 $.post("http://localhost:3000/usuario", formData)
                     .done((data) => {
-                        alert(data.message)
-                    });
+                        alert(data.message);
+                        window.location.reload();
+                });
             });
             
+            function listar() {
+                $.get("http://localhost:3000/usuario", (e) => {
+
+                    var usuarioTable = $('#usuario-table > tbody');
+
+                    for (var i = 0; i < e.length; i++) {
+                        var content = usuarioTable.html();
+
+                        var row = `
+                            <tr>
+                                <th scope="row">${e[i].id}</th>
+                                <td>${e[i].nome}</td>
+                                <td>${e[i].email}</td>
+                                <td>${e[i].login}</td>
+                                <td>${e[i].documento}</td>
+                                <td>${e[i].profissao}</td>
+                                <td>${e[i].datanascimento}</td>
+                                <td>
+                                    <button class="btn btn-info abrir-atualizar" data-id="${e[i].id}" data-toggle="modal" data-target="#exampleModal">
+                                        <svg width="20px" height="20px" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M8.29289 3.70711L1 11V15H5L12.2929 7.70711L8.29289 3.70711Z" fill="#fff"/>
+                                            <path d="M9.70711 2.29289L13.7071 6.29289L15.1716 4.82843C15.702 4.29799 16 3.57857 16 2.82843C16 1.26633 14.7337 0 13.1716 0C12.4214 0 11.702 0.297995 11.1716 0.828428L9.70711 2.29289Z" fill="#fff"/>
+                                        </svg>
+                                    </button>
+                                    <button class="btn btn-danger remover" data-id="${e[i].id}">X</button>
+                                </td>
+                            </tr>
+                        `;
+
+                        usuarioTable.html(content + row);
+                    }
+                });
+            }
         });
     </script>
 </body>
